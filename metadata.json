@@ -1,0 +1,6 @@
+{
+  "name": "Prasanna Portfolio",
+  "description": "Full-stack MERN portfolio for Gompa Rani Prasanna with an interactive workspace, secure contact form, MongoDB integration, and email notifications.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
