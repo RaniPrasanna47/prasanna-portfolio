@@ -6,6 +6,13 @@ import { createServer as createViteServer } from 'vite';
 import mongoose from 'mongoose';
 import nodemailer from 'nodemailer';
 import { GoogleGenAI } from '@google/genai';
+import dns from 'dns';
+
+// Force DNS lookup to prefer IPv4 over IPv6. This resolves network routing (ENETUNREACH)
+// errors in container runtimes where DNS resolves IPv6 addresses but public routing only supports IPv4.
+if (typeof dns.setDefaultResultOrder === 'function') {
+  dns.setDefaultResultOrder('ipv4first');
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -197,6 +204,7 @@ async function sendEmailNotification(
       console.log('[SMTP Mailer] Utilizing specialized Nodemailer "gmail" service adapter for maximum delivery assurance.');
       transportOptions = {
         service: 'gmail',
+        family: 4,
         auth: {
           user: user,
           pass: pass,
@@ -210,6 +218,7 @@ async function sendEmailNotification(
       console.log('[SMTP Mailer] Utilizing specialized Nodemailer "hotmail" (Outlook/Office365) service adapter.');
       transportOptions = {
         service: 'hotmail',
+        family: 4,
         auth: {
           user: user,
           pass: pass,
@@ -223,6 +232,7 @@ async function sendEmailNotification(
       console.log('[SMTP Mailer] Utilizing specialized Nodemailer "yahoo" service adapter.');
       transportOptions = {
         service: 'yahoo',
+        family: 4,
         auth: {
           user: user,
           pass: pass,
@@ -240,6 +250,7 @@ async function sendEmailNotification(
         host: resolvedHost,
         port: parseInt(port),
         secure: port === '465',
+        family: 4,
         auth: {
           user: user,
           pass: pass,
