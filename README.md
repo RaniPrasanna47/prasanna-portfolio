@@ -76,53 +76,6 @@ npm run start
 
 ---
 
-## ☁️ Deploying on Vercel
-
-Vercel is optimized for frontend Single Page Applications (SPAs). You can deploy this portfolio in either static frontend mode or serverless mode.
-
-### Option A: Deploy as a Static Client-Side SPA (Recommended for Vercel)
-Since Vercel excels at hosting static files, you can deploy the portfolio's React interface directly:
-
-1. **Push to GitHub**: Initialize a Git repository and push your project to GitHub.
-2. **Import to Vercel**: Log in to the [Vercel Dashboard](https://vercel.com) and click **Add New > Project**, then import your GitHub repository.
-3. **Configure Settings**:
-   - **Framework Preset**: Choose `Vite`.
-   - **Build Command**: `npm run build` (or `vite build` if you only want the client files built).
-   - **Output Directory**: `dist`.
-4. **Deploy**: Click **Deploy**. Vercel will build the frontend assets and serve them globally via their CDN.
-
-### Option B: Deploying Full-Stack Capabilities (Vercel Serverless Functions)
-If you require server-side routes (Express endpoints) to run on Vercel:
-1. Add a `vercel.json` configuration file to your root directory:
-   ```json
-   {
-     "version": 2,
-     "builds": [
-       {
-         "src": "server.ts",
-         "use": "@vercel/node"
-       },
-       {
-         "src": "package.json",
-         "use": "@vercel/static-build",
-         "config": { "distDir": "dist" }
-       }
-     ],
-     "routes": [
-       {
-         "src": "/api/(.*)",
-         "dest": "server.ts"
-       },
-       {
-         "src": "/(.*)",
-         "dest": "/index.html"
-       }
-     ]
-   }
-   ```
-2. Connect and deploy the repository via Vercel. Vercel will automatically provision serverless handlers for your `/api` routes!
-
----
 
 ## 🌐 Deploying on Render (Full-Stack Web Service)
 
