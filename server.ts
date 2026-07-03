@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import path from 'path';
 import fs from 'fs';
@@ -155,7 +156,7 @@ async function sendEmailNotification(data: {
   aiSentiment?: string;
   aiDraftReply?: string;
 }) {
-  const host = process.env.SMTP_HOST;
+  let host = process.env.SMTP_HOST;
   const port = process.env.SMTP_PORT || '587';
   const user = process.env.SMTP_USER;
   const pass = process.env.SMTP_PASS;
@@ -164,6 +165,20 @@ async function sendEmailNotification(data: {
   if (!user || !pass) {
     console.log('SMTP service coordinates (SMTP_USER / SMTP_PASS) not set. Skipping actual email dispatch.');
     return { sent: false, reason: 'Credentials not configured' };
+  }
+
+  // Smart fallback for SMTP Host if not explicitly provided
+  if (!host) {
+    if (user.includes('@gmail.com')) {
+      host = 'smtp.gmail.com';
+    } else if (user.includes('@outlook.com') || user.includes('@hotmail.com')) {
+      host = 'smtp-mail.outlook.com';
+    } else if (user.includes('@yahoo.com')) {
+      host = 'smtp.mail.yahoo.com';
+    } else {
+      console.log('SMTP_HOST is not specified and could not auto-resolve from SMTP_USER email. Skipping actual email dispatch.');
+      return { sent: false, reason: 'SMTP_HOST not specified' };
+    }
   }
 
   try {
