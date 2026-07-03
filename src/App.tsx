@@ -291,8 +291,8 @@ export default function App() {
     tagline: 'Computer Science & Engineering Student | Full-Stack Developer | Problem Solver',
     email: 'raniprasanna997@gmail.com',
     phone: '9392372226',
-    linkedin: 'https://linkedin.com/in/raniprasanna',
-    github: 'https://github.com/Rani-Prasanna',
+    linkedin: 'https://www.linkedin.com/in/g-rani-prasanna/',
+    github: 'https://github.com/RaniPrasanna47',
     location: 'NIT Durgapur, India',
     education: {
       institution: 'National Institute of Technology, Durgapur',
@@ -318,13 +318,16 @@ export default function App() {
       }
     ],
     achievements: [
-      'Solved 350+ competitive programming challenges across LeetCode, Codechef (3 star 1600+), and Codeforces (pupil).',
+      'Solved 350+ DSA problems across LeetCode, Codechef (3 star 1600+), and Codeforces (pupil).',
       'Completed CS50x Introduction to Computer Science by Harvard University.',
+      'Postman API Fundamental Student Expert Badge.',
+      'JavaScript (Intermediate) certification from Hackerrank.',
       'Certified in "Node.js, Express, MongoDB & More: The Complete Bootcamp" on Udemy.'
     ]
   };
 
-  const displayProfile = profile || fallbackProfile;  return (
+  const displayProfile = profile || fallbackProfile;  
+  return (
     <div className={`min-h-screen ${styles.bg} ${styles.text} font-sans selection:bg-cyan-500 selection:text-black border-[12px] ${styles.outerBorder} transition-colors duration-300`}>
       {/* Top Professional Decorative Status Bar */}
       <header className={`sticky top-0 z-40 ${isDark ? 'bg-[#050506]/90 border-white/10' : 'bg-white/95 border-slate-200/80'} backdrop-blur-md border-b shadow-md transition-all duration-300`}>
@@ -993,12 +996,12 @@ export default function App() {
       <footer className={`border-t ${styles.cardBorder} ${styles.card} ${styles.subtext} py-8 text-center text-xs space-y-3 mt-12 transition-colors duration-300`}>
         <p className={`font-semibold ${styles.heading}`}>Gompa Rani Prasanna &copy; 2026 | NIT Durgapur B.Tech Computer Science</p>
         <div className="flex justify-center gap-4 text-[11px]">
-          <span>MERN Full-Stack Engine</span>
+          <span>MERN Full-Stack</span>
           <span>&bull;</span>
           <span>Nodemailer Dispatches</span>
         </div>
         <p className={`text-[10px] ${styles.subtext} max-w-md mx-auto px-4 leading-normal`}>
-          This system securely processes and logs incoming contact forms to a MongoDB database (equipped with a resilient local backup system) and dispatches real-time email notifications.
+          This system securely processes and logs incoming contact forms to a MongoDB database (equipped with a resilient local backup system) and dispatches real-time email notifications. Made with ❤️ by Prasanna.
         </p>
       </footer>
     </div>

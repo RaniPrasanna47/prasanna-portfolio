@@ -469,8 +469,8 @@ app.get('/api/profile', (req, res) => {
     tagline: 'Computer Science & Engineering Student | Full-Stack Developer | Problem Solver',
     email: 'raniprasanna997@gmail.com',
     phone: '9392372226',
-    linkedin: 'https://linkedin.com/in/raniprasanna',
-    github: 'https://github.com/Rani-Prasanna',
+    linkedin: 'https://www.linkedin.com/in/g-rani-prasanna/',
+    github: 'https://github.com/RaniPrasanna47',
     location: 'NIT Durgapur, India',
     education: {
       institution: 'National Institute of Technology, Durgapur',
@@ -512,7 +512,9 @@ app.get('/api/profile', (req, res) => {
       }
     ],
     achievements: [
-      'Solved 350+ competitive programming challenges across LeetCode, Codechef (3 star 1600+), and Codeforces (pupil rating).',
+      'Solved 350+ DSA Problems across LeetCode, Codechef (3 star 1600+), and Codeforces (pupil rating).',
+      'Postman API Fundamental Student Expert Badge.',
+      'JavaScript (Intermediate) certification from Hackerrank.',
       'Completed CS50x Introduction to Computer Science by Harvard University.',
       'Certified in "Node.js, Express, MongoDB & More: The Complete Bootcamp" on Udemy.'
     ]
@@ -533,8 +535,36 @@ app.get('/api/projects', (req, res) => {
         'Collaborated with a cross-functional 10-member team to feature event trackers and live workshop updates.',
         'Successfully drove user engagement upward by 30% through rich, responsive design and modern interface layout.'
       ],
-      link: 'https://github.com/Rani-Prasanna',
-      liveLink: 'https://ccanitd.in'
+      link: 'https://github.com/CCA-WDCT/cca2021/tree/update26',
+      liveLink: 'https://app.ccanitd.in/'
+    },
+    {
+      id: 'personal-portfolio',
+      title: 'Personal Portfolio Website',
+      tech: 'React.js, TypeScript, Tailwind CSS, MongoDB',
+      category: 'Web Development',
+      description: 'A responsive personal portfolio website showcasing projects, skills, and experience.',
+      bullets: [
+        'Developed a responsive personal portfolio website using React 18, TypeScript, and Tailwind CSS.',
+        'Built a Node.js/Express REST API integrated with MongoDB (Mongoose) to persist visitor messages.',
+        'Configured an optimized build system using Vite and esbuild for seamless containerized cloud deployment.'
+      ],
+      link: 'https://github.com/RaniPrasanna47/prasanna-portfolio',
+      liveLink: 'https://prasanna-portfolio-cnsa.onrender.com/'
+    },
+    {
+      id: 'Agentic-RAG_Chatbot',
+      title: 'Agentic RAG Chatbot',
+      tech: 'React, Tailwind CSS, TypeScript, Express, Firebase, PineconeDB',
+      category: 'Machine Learning',
+      description: 'An agentic retrieval-augmented generation chatbot for interactive question answering.',
+      bullets: [
+        'Developed an interactive chatbot with a LangGraph-inspired agentic state machine for multi-turn reasoning and document interrogation.',
+        'Integrated Google Gemini Embeddings with Pinecone Vector DB for real-time document chunking, indexing, and high-dimensional semantic search.',
+        'Implemented Firebase Authentication with an Express.js backend to securely isolate the Gemini SDK and vector database credentials.'
+      ],
+      link: 'https://github.com/RaniPrasanna47/agentic-rag-chatbot',
+      liveLink: 'https://agentic-rag-chatbot-zye6.onrender.com/'
     },
     {
       id: 'sentiment-analysis',
@@ -547,8 +577,8 @@ app.get('/api/projects', (req, res) => {
         'Boosted overall sentiment accuracy by 17% on benchmark evaluation databases.',
         'Integrated a responsive FastAPI backend structure to enable rapid web-based client queries.'
       ],
-      link: 'https://github.com/Rani-Prasanna',
-      liveLink: 'https://sentiment-analyzer-demo.streamlit.app'
+      link: 'https://github.com/RaniPrasanna47/sentiment_analysis',
+      
     },
     {
       id: 'quiz-system',
@@ -561,8 +591,35 @@ app.get('/api/projects', (req, res) => {
         'Coded rigorous user authentication guards and validation parameters preventing account collision.',
         'Engineered dynamic Jinja2 page templating for responsive, immediate feedback during test administration.'
       ],
-      link: 'https://github.com/Rani-Prasanna',
-      liveLink: 'https://quiz-platform-demo.herokuapp.com'
+      link: 'https://github.com/RaniPrasanna47/Quiz-System',
+      
+    },
+    {
+      id: 'MovieDB',
+      title: 'Movie Database Application',
+      tech: 'React.js, TypeScript, Tailwind CSS, MongoDB',
+      category: 'Web Development',
+      description: 'A responsive movie database application allowing users to search, filter, and discover films.',
+      bullets: [
+        'Built a responsive movie discovery web application using React with a clean and interactive user interface.',
+        'Integrated a movie API to display trending movies and enable search functionality with dynamic data.',
+        'Implemented reusable React components, routing, and responsive design for a seamless user experience.'
+      ],
+      link: 'https://github.com/RaniPrasanna47/Movie-Hive-React',
+      liveLink: 'https://movie-hive-react.vercel.app/'
+    },
+    {
+      id: 'Task-Manager',
+      title: 'Task Management Application',
+      tech: 'Django, Python, HTML, CSS',
+      category: 'Web Development',
+      description: 'A responsive task management application allowing users to create, update, and track their daily tasks.',
+      bullets: [
+        'Developed a task management web application using Django with a clean and interactive user interface.',
+        'Implemented features to create, update, delete, and organize tasks with deadlines.',
+        'Designed a intuitive UI for seamless task management and user experience.'
+      ],
+      link: 'https://github.com/RaniPrasanna47/django_taskmanager',
     }
   ]);
 });
