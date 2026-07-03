@@ -195,6 +195,9 @@ async function sendEmailNotification(data: {
         user: user,
         pass: pass,
       },
+      connectionTimeout: 5000, // Fail fast if SMTP port is blocked or unreachable (5 seconds)
+      greetingTimeout: 5000,   // Fail fast if greeting response is slow (5 seconds)
+      socketTimeout: 10000,    // Idle timeout for socket operations (10 seconds)
     });
 
     const mailOptions = {
