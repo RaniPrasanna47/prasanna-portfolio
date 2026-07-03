@@ -7,7 +7,7 @@ import nodemailer from 'nodemailer';
 import { GoogleGenAI } from '@google/genai';
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // Setup Middleware
 app.use(express.json());
@@ -491,7 +491,7 @@ async function bootstrap() {
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
+  app.listen(Number(PORT), '0.0.0.0', () => {
     console.log(`Full-Stack Server booting successfully on port ${PORT}`);
     console.log(`MongoDB storage connection state: ${isConnectedToMongo ? 'ONLINE' : 'OFFLINE (FILE FALLBACK ACTIVE)'}`);
   });
