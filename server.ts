@@ -152,15 +152,18 @@ async function deleteContactMessage(id: string) {
 }
 
 // Nodemailer SMTP integration
-async function sendEmailNotification(data: {
-  name: string;
-  email: string;
-  subject: string;
-  message: string;
-  aiSummary?: string;
-  aiSentiment?: string;
-  aiDraftReply?: string;
-}) {
+async function sendEmailNotification(
+  data: {
+    name: string;
+    email: string;
+    subject: string;
+    message: string;
+    aiSummary?: string;
+    aiSentiment?: string;
+    aiDraftReply?: string;
+  },
+  requestOrigin?: string
+) {
   const host = process.env.SMTP_HOST;
   const port = process.env.SMTP_PORT || '587';
   const user = process.env.SMTP_USER;
@@ -173,6 +176,7 @@ async function sendEmailNotification(data: {
   console.log(` - Raw Environment SMTP_USER: "${user || '(Not specified)'}"`);
   console.log(` - Raw Environment SMTP_PASS: ${pass ? '[Configured]' : '[Missing/Not Set]'}`);
   console.log(` - Target Receiver: "${receiver}"`);
+  console.log(` - Provided Request Origin: "${requestOrigin || '(None)'}"`);
 
   let smtpFailed = false;
   let smtpErrorReason = '';
@@ -337,11 +341,18 @@ ${data.aiDraftReply}
 ` : ''}
       `.trim();
 
+      const fallbackOrigin = 'https://prasanna-portfolio-cnsa.onrender.com';
+      const webOrigin = (requestOrigin && requestOrigin.startsWith('http') && !requestOrigin.includes('localhost') && !requestOrigin.includes('127.0.0.1')) ? requestOrigin : fallbackOrigin;
+
+      console.log(`[HTTP Mailer] Web Origin used for FormSubmit headers: "${webOrigin}"`);
+
       const response = await fetch(`https://formsubmit.co/ajax/${receiver}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          'Accept': 'application/json',
+          'Referer': webOrigin,
+          'Origin': webOrigin
         },
         body: JSON.stringify({
           name: data.name,
@@ -571,8 +582,9 @@ app.post('/api/contact', async (req, res) => {
     // 3. Persist record (MongoDB or JSON file fallback)
     const savedRecord = await saveContactMessage(recordPayload);
 
-    // 4. Send email notification (if SMTP credentials present)
-    const emailResponse = await sendEmailNotification(recordPayload);
+    // 4. Send email notification (with fallback and SMTP port bypass)
+    const requestOrigin = (req.headers.origin as string) || (req.headers.referer as string) || '';
+    const emailResponse = await sendEmailNotification(recordPayload, requestOrigin);
 
     return res.status(201).json({
       success: true,
