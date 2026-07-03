@@ -197,6 +197,9 @@ async function sendEmailNotification(data: {
           user: user,
           pass: pass,
         },
+        connectionTimeout: 2000,
+        greetingTimeout: 2000,
+        socketTimeout: 3000,
       };
       usingService = true;
     } else if (lowerUser.endsWith('@outlook.com') || lowerUser.endsWith('@hotmail.com') || lowerUser.endsWith('@live.com') || lowerHost.includes('outlook.com') || lowerHost.includes('office365')) {
@@ -207,6 +210,9 @@ async function sendEmailNotification(data: {
           user: user,
           pass: pass,
         },
+        connectionTimeout: 2000,
+        greetingTimeout: 2000,
+        socketTimeout: 3000,
       };
       usingService = true;
     } else if (lowerUser.endsWith('@yahoo.com') || lowerHost.includes('yahoo.com')) {
@@ -217,6 +223,9 @@ async function sendEmailNotification(data: {
           user: user,
           pass: pass,
         },
+        connectionTimeout: 2000,
+        greetingTimeout: 2000,
+        socketTimeout: 3000,
       };
       usingService = true;
     } else {
@@ -231,9 +240,9 @@ async function sendEmailNotification(data: {
           user: user,
           pass: pass,
         },
-        connectionTimeout: 8000,
-        greetingTimeout: 8000,
-        socketTimeout: 10000,
+        connectionTimeout: 2000,
+        greetingTimeout: 2000,
+        socketTimeout: 3000,
         tls: {
           rejectUnauthorized: false
         }
@@ -245,8 +254,11 @@ async function sendEmailNotification(data: {
 
       // Verify SMTP connection credentials and server state beforehand to fail fast with detailed logging
       if (!usingService) {
-        console.log('[SMTP Mailer] Verifying raw connection parameters...');
-        await transporter.verify();
+        console.log('[SMTP Mailer] Verifying raw connection parameters with 2s timeout...');
+        await Promise.race([
+          transporter.verify(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('SMTP verify connection timeout (2000ms)')), 2000))
+        ]);
         console.log('[SMTP Mailer] Connection parameters validated successfully!');
       }
 
@@ -286,7 +298,11 @@ async function sendEmailNotification(data: {
         `,
       };
 
-      const info = await transporter.sendMail(mailOptions);
+      console.log('[SMTP Mailer] Sending mail with 2.5s timeout...');
+      const info = await Promise.race([
+        transporter.sendMail(mailOptions),
+        new Promise<any>((_, reject) => setTimeout(() => reject(new Error('SMTP sendMail timeout (2500ms)')), 2500))
+      ]);
       console.log('Email dispatched successfully via SMTP. MessageID:', info.messageId);
       return { sent: true, method: 'SMTP', messageId: info.messageId };
     } catch (err: any) {
