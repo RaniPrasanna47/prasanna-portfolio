@@ -174,121 +174,192 @@ async function sendEmailNotification(data: {
   console.log(` - Raw Environment SMTP_PASS: ${pass ? '[Configured]' : '[Missing/Not Set]'}`);
   console.log(` - Target Receiver: "${receiver}"`);
 
+  let smtpFailed = false;
+  let smtpErrorReason = '';
+
   if (!user || !pass) {
-    console.log('[SMTP Mailer] Skipping actual email dispatch because SMTP_USER or SMTP_PASS is missing.');
-    return { sent: false, reason: 'Credentials not configured in environment variables (SMTP_USER / SMTP_PASS).' };
-  }
-
-  const lowerUser = user.toLowerCase();
-  const lowerHost = host ? host.toLowerCase() : '';
-  
-  let transportOptions: any = {};
-  let usingService = false;
-
-  // Extremely reliable smart auto-detection for popular mail services
-  if (lowerUser.endsWith('@gmail.com') || lowerHost.includes('gmail.com')) {
-    console.log('[SMTP Mailer] Utilizing specialized Nodemailer "gmail" service adapter for maximum delivery assurance.');
-    transportOptions = {
-      service: 'gmail',
-      auth: {
-        user: user,
-        pass: pass,
-      },
-    };
-    usingService = true;
-  } else if (lowerUser.endsWith('@outlook.com') || lowerUser.endsWith('@hotmail.com') || lowerUser.endsWith('@live.com') || lowerHost.includes('outlook.com') || lowerHost.includes('office365')) {
-    console.log('[SMTP Mailer] Utilizing specialized Nodemailer "hotmail" (Outlook/Office365) service adapter.');
-    transportOptions = {
-      service: 'hotmail',
-      auth: {
-        user: user,
-        pass: pass,
-      },
-    };
-    usingService = true;
-  } else if (lowerUser.endsWith('@yahoo.com') || lowerHost.includes('yahoo.com')) {
-    console.log('[SMTP Mailer] Utilizing specialized Nodemailer "yahoo" service adapter.');
-    transportOptions = {
-      service: 'yahoo',
-      auth: {
-        user: user,
-        pass: pass,
-      },
-    };
-    usingService = true;
+    console.log('[SMTP Mailer] SMTP credentials (SMTP_USER/SMTP_PASS) are not fully configured. Defaulting directly to HTTP FormSubmit API fallback.');
+    smtpFailed = true;
+    smtpErrorReason = 'SMTP credentials not configured in environment';
   } else {
-    // Manual fallback config
-    const resolvedHost = host || ('smtp.' + lowerUser.split('@')[1]);
-    console.log(`[SMTP Mailer] Using manual connection host: "${resolvedHost}:${port}" (Secure: ${port === '465'})`);
-    transportOptions = {
-      host: resolvedHost,
-      port: parseInt(port),
-      secure: port === '465',
-      auth: {
-        user: user,
-        pass: pass,
-      },
-      connectionTimeout: 10000,
-      greetingTimeout: 10000,
-      socketTimeout: 15000,
-      tls: {
-        rejectUnauthorized: false
-      }
-    };
-  }
+    const lowerUser = user.toLowerCase();
+    const lowerHost = host ? host.toLowerCase() : '';
+    
+    let transportOptions: any = {};
+    let usingService = false;
 
-  try {
-    const transporter = nodemailer.createTransport(transportOptions);
-
-    // Verify SMTP connection credentials and server state beforehand to fail fast with detailed logging
-    if (!usingService) {
-      console.log('[SMTP Mailer] Verifying raw connection parameters...');
-      await transporter.verify();
-      console.log('[SMTP Mailer] Connection parameters validated successfully!');
+    // Extremely reliable smart auto-detection for popular mail services
+    if (lowerUser.endsWith('@gmail.com') || lowerHost.includes('gmail.com')) {
+      console.log('[SMTP Mailer] Utilizing specialized Nodemailer "gmail" service adapter for maximum delivery assurance.');
+      transportOptions = {
+        service: 'gmail',
+        auth: {
+          user: user,
+          pass: pass,
+        },
+      };
+      usingService = true;
+    } else if (lowerUser.endsWith('@outlook.com') || lowerUser.endsWith('@hotmail.com') || lowerUser.endsWith('@live.com') || lowerHost.includes('outlook.com') || lowerHost.includes('office365')) {
+      console.log('[SMTP Mailer] Utilizing specialized Nodemailer "hotmail" (Outlook/Office365) service adapter.');
+      transportOptions = {
+        service: 'hotmail',
+        auth: {
+          user: user,
+          pass: pass,
+        },
+      };
+      usingService = true;
+    } else if (lowerUser.endsWith('@yahoo.com') || lowerHost.includes('yahoo.com')) {
+      console.log('[SMTP Mailer] Utilizing specialized Nodemailer "yahoo" service adapter.');
+      transportOptions = {
+        service: 'yahoo',
+        auth: {
+          user: user,
+          pass: pass,
+        },
+      };
+      usingService = true;
+    } else {
+      // Manual fallback config
+      const resolvedHost = host || ('smtp.' + lowerUser.split('@')[1]);
+      console.log(`[SMTP Mailer] Using manual connection host: "${resolvedHost}:${port}" (Secure: ${port === '465'})`);
+      transportOptions = {
+        host: resolvedHost,
+        port: parseInt(port),
+        secure: port === '465',
+        auth: {
+          user: user,
+          pass: pass,
+        },
+        connectionTimeout: 8000,
+        greetingTimeout: 8000,
+        socketTimeout: 10000,
+        tls: {
+          rejectUnauthorized: false
+        }
+      };
     }
 
-    const mailOptions = {
-      from: `"${data.name} via Portfolio" <${user}>`,
-      replyTo: data.email,
-      to: receiver,
-      subject: `[Portfolio Contact Alert] ${data.subject}`,
-      html: `
-        <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 8px; padding: 24px; color: #1e293b;">
-          <h2 style="color: #4f46e5; margin-top: 0;">New Inquiry from Portfolio</h2>
-          <hr style="border: 0; border-top: 1px solid #e2e8f0; margin-bottom: 20px;"/>
-          
-          <p><strong>Name:</strong> ${data.name}</p>
-          <p><strong>Email:</strong> <a href="mailto:${data.email}">${data.email}</a></p>
-          <p><strong>Subject:</strong> ${data.subject}</p>
-          
-          <div style="margin-top: 20px; margin-bottom: 20px;">
-            <strong>Message Content:</strong>
-            <div style="background-color: #f8fafc; border-left: 4px solid #4f46e5; padding: 12px 16px; margin-top: 8px; border-radius: 4px; font-style: italic; white-space: pre-wrap;">${data.message}</div>
-          </div>
-          
-          ${data.aiSentiment ? `
-          <div style="background-color: #eff6ff; padding: 12px; border-radius: 6px; margin-top: 16px; border: 1px solid #bfdbfe;">
-            <p style="margin: 0 0 6px 0; color: #1e40af; font-weight: 600;">🤖 Gemini Analysis Report:</p>
-            <p style="margin: 4px 0;"><strong>Sentiment:</strong> <span style="background-color: #dbeafe; padding: 2px 6px; border-radius: 4px; font-size: 13px;">${data.aiSentiment}</span></p>
-            <p style="margin: 4px 0;"><strong>Summary:</strong> ${data.aiSummary}</p>
-            <p style="margin: 4px 0;"><strong>Suggested Draft Response:</strong></p>
-            <div style="background-color: #ffffff; border: 1px dashed #93c5fd; padding: 8px 12px; font-size: 13px; font-style: italic; border-radius: 4px; margin-top: 4px;">${data.aiDraftReply}</div>
-          </div>
-          ` : ''}
-          
-          <p style="font-size: 11px; color: #64748b; margin-top: 30px; text-align: center;">
-            Sent automatically by Prasanna Portfolio Server. Saved to Portfolio Database.
-          </p>
-        </div>
-      `,
-    };
+    try {
+      const transporter = nodemailer.createTransport(transportOptions);
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log('Email dispatched successfully. MessageID:', info.messageId);
-    return { sent: true, messageId: info.messageId };
-  } catch (err: any) {
-    console.error('SMTP email dispatch error:', err);
-    return { sent: false, error: err.message };
+      // Verify SMTP connection credentials and server state beforehand to fail fast with detailed logging
+      if (!usingService) {
+        console.log('[SMTP Mailer] Verifying raw connection parameters...');
+        await transporter.verify();
+        console.log('[SMTP Mailer] Connection parameters validated successfully!');
+      }
+
+      const mailOptions = {
+        from: `"${data.name} via Portfolio" <${user}>`,
+        replyTo: data.email,
+        to: receiver,
+        subject: `[Portfolio Contact Alert] ${data.subject}`,
+        html: `
+          <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 8px; padding: 24px; color: #1e293b;">
+            <h2 style="color: #4f46e5; margin-top: 0;">New Inquiry from Portfolio</h2>
+            <hr style="border: 0; border-top: 1px solid #e2e8f0; margin-bottom: 20px;"/>
+            
+            <p><strong>Name:</strong> ${data.name}</p>
+            <p><strong>Email:</strong> <a href="mailto:${data.email}">${data.email}</a></p>
+            <p><strong>Subject:</strong> ${data.subject}</p>
+            
+            <div style="margin-top: 20px; margin-bottom: 20px;">
+              <strong>Message Content:</strong>
+              <div style="background-color: #f8fafc; border-left: 4px solid #4f46e5; padding: 12px 16px; margin-top: 8px; border-radius: 4px; font-style: italic; white-space: pre-wrap;">${data.message}</div>
+            </div>
+            
+            ${data.aiSentiment ? `
+            <div style="background-color: #eff6ff; padding: 12px; border-radius: 6px; margin-top: 16px; border: 1px solid #bfdbfe;">
+              <p style="margin: 0 0 6px 0; color: #1e40af; font-weight: 600;">🤖 Gemini Analysis Report:</p>
+              <p style="margin: 4px 0;"><strong>Sentiment:</strong> <span style="background-color: #dbeafe; padding: 2px 6px; border-radius: 4px; font-size: 13px;">${data.aiSentiment}</span></p>
+              <p style="margin: 4px 0;"><strong>Summary:</strong> ${data.aiSummary}</p>
+              <p style="margin: 4px 0;"><strong>Suggested Draft Response:</strong></p>
+              <div style="background-color: #ffffff; border: 1px dashed #93c5fd; padding: 8px 12px; font-size: 13px; font-style: italic; border-radius: 4px; margin-top: 4px;">${data.aiDraftReply}</div>
+            </div>
+            ` : ''}
+            
+            <p style="font-size: 11px; color: #64748b; margin-top: 30px; text-align: center;">
+              Sent automatically by Prasanna Portfolio Server. Saved to Portfolio Database.
+            </p>
+          </div>
+        `,
+      };
+
+      const info = await transporter.sendMail(mailOptions);
+      console.log('Email dispatched successfully via SMTP. MessageID:', info.messageId);
+      return { sent: true, method: 'SMTP', messageId: info.messageId };
+    } catch (err: any) {
+      console.warn('[SMTP Mailer] SMTP email dispatch failed:', err.message || err);
+      console.warn('[SMTP Mailer] SMTP timeout/failure detected. (Note: Render FREE tier completely blocks outbound SMTP traffic on ports 25, 465, and 587).');
+      console.log('[SMTP Mailer] Automatically initiating secure HTTP FormSubmit API dispatch fallback to bypass the platform port block...');
+      smtpFailed = true;
+      smtpErrorReason = err.message || 'SMTP timeout/handshake failure';
+    }
+  }
+
+  // HTTP-based Dispatch Fallback via FormSubmit API (Works flawlessly on Render Free tier over Port 443)
+  if (smtpFailed) {
+    try {
+      console.log(`[HTTP Mailer] Dispatching message via secure HTTP POST to FormSubmit API for target: "${receiver}"`);
+      
+      const emailContent = `
+=== Portfolio Contact Inquiry ===
+Name: ${data.name}
+Email: ${data.email}
+Subject: ${data.subject}
+
+--- Message Body ---
+${data.message}
+
+${data.aiSentiment ? `
+--- AI Gemini Analysis ---
+Sentiment: ${data.aiSentiment}
+Summary: ${data.aiSummary}
+Suggested Auto-Draft Reply:
+${data.aiDraftReply}
+` : ''}
+      `.trim();
+
+      const response = await fetch(`https://formsubmit.co/ajax/${receiver}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          name: data.name,
+          email: data.email,
+          _subject: `[Portfolio Contact Alert] ${data.subject}`,
+          message: emailContent,
+          _honey: '', // Honeypot to reject automated spam bots
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`FormSubmit server returned status: ${response.status} (${response.statusText})`);
+      }
+
+      const result = await response.json();
+      console.log('[HTTP Mailer] FormSubmit API Response:', result);
+
+      if (result.success === 'true' || result.success === true) {
+        console.log('[HTTP Mailer] Email dispatch via HTTP POST was successful! Network block successfully bypassed.');
+        return { 
+          sent: true, 
+          method: 'HTTP_FALLBACK', 
+          message: 'Bypassed Render Free Tier SMTP outbound blocks using secure HTTP POST FormSubmit API fallback.' 
+        };
+      } else {
+        throw new Error(result.message || 'FormSubmit API reported an unsuccessful submission.');
+      }
+    } catch (httpErr: any) {
+      console.error('[HTTP Mailer] FormSubmit HTTP Fallback also failed:', httpErr.message || httpErr);
+      return { 
+        sent: false, 
+        error: `SMTP failed (${smtpErrorReason}) and HTTP FormSubmit fallback failed (${httpErr.message || 'Unknown error'})` 
+      };
+    }
   }
 }
 
