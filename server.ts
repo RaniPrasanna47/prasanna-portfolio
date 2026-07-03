@@ -167,8 +167,15 @@ async function sendEmailNotification(data: {
   const pass = process.env.SMTP_PASS;
   const receiver = process.env.CONTACT_RECEIVER_EMAIL || 'raniprasanna997@gmail.com';
 
+  console.log('[SMTP Mailer] Initializing email dispatch...');
+  console.log(` - Raw Environment SMTP_HOST: "${process.env.SMTP_HOST || '(Not specified)'}"`);
+  console.log(` - Raw Environment SMTP_PORT: "${process.env.SMTP_PORT || '587 (Default)'}"`);
+  console.log(` - Raw Environment SMTP_USER: "${process.env.SMTP_USER || '(Not specified)'}"`);
+  console.log(` - Raw Environment SMTP_PASS: ${process.env.SMTP_PASS ? '[Configured]' : '[Missing/Not Set]'}`);
+  console.log(` - Target Receiver: "${receiver}"`);
+
   if (!user || !pass) {
-    console.log('SMTP service coordinates (SMTP_USER / SMTP_PASS) not set. Skipping actual email dispatch.');
+    console.log('[SMTP Mailer] Skipping actual email dispatch because SMTP_USER or SMTP_PASS is missing.');
     return { sent: false, reason: 'Credentials not configured' };
   }
 
@@ -181,10 +188,13 @@ async function sendEmailNotification(data: {
     } else if (user.includes('@yahoo.com')) {
       host = 'smtp.mail.yahoo.com';
     } else {
-      console.log('SMTP_HOST is not specified and could not auto-resolve from SMTP_USER email. Skipping actual email dispatch.');
+      console.log('[SMTP Mailer] SMTP_HOST is not specified and could not auto-resolve from the SMTP_USER domain. Skipping actual email dispatch.');
       return { sent: false, reason: 'SMTP_HOST not specified' };
     }
+    console.log(` - Auto-resolved SMTP_HOST fallback: "${host}"`);
   }
+
+  console.log(`[SMTP Mailer] Initiating connection to: ${host}:${port} (Secure mode: ${port === '465'})`);
 
   try {
     const transporter = nodemailer.createTransport({
@@ -198,6 +208,9 @@ async function sendEmailNotification(data: {
       connectionTimeout: 5000, // Fail fast if SMTP port is blocked or unreachable (5 seconds)
       greetingTimeout: 5000,   // Fail fast if greeting response is slow (5 seconds)
       socketTimeout: 10000,    // Idle timeout for socket operations (10 seconds)
+      tls: {
+        rejectUnauthorized: false // Avoid handshake failures for various mail setups
+      }
     });
 
     const mailOptions = {
