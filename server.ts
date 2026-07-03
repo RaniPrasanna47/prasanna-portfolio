@@ -18,19 +18,24 @@ const MONGODB_URI = process.env.MONGODB_URI;
 let isConnectedToMongo = false;
 let ContactModel: any = null;
 
-if (MONGODB_URI) {
-  console.log('Initiating MongoDB connection attempt...');
-  mongoose.connect(MONGODB_URI, {
-    serverSelectionTimeoutMS: 5000,
-  }).then(() => {
-    console.log('Successfully connected to MongoDB.');
-    isConnectedToMongo = true;
-  }).catch((err: any) => {
-    console.error('MongoDB connection failed:', err.message);
-    console.log('Falling back to local storage file persistence.');
-  });
-} else {
-  console.log('No MONGODB_URI environment variable detected. Defaulting to local JSON storage fallback.');
+async function connectToMongo() {
+  if (MONGODB_URI) {
+    console.log('Initiating MongoDB connection attempt...');
+    try {
+      await mongoose.connect(MONGODB_URI, {
+        serverSelectionTimeoutMS: 5000,
+      });
+      console.log('Successfully connected to MongoDB.');
+      isConnectedToMongo = true;
+    } catch (err: any) {
+      console.error('MongoDB connection failed:', err.message);
+      console.log('Falling back to local storage file persistence.');
+      isConnectedToMongo = false;
+    }
+  } else {
+    console.log('No MONGODB_URI environment variable detected. Defaulting to local JSON storage fallback.');
+    isConnectedToMongo = false;
+  }
 }
 
 // Contact Schema definition for MongoDB
@@ -492,6 +497,9 @@ app.get('/api/stats', async (req, res) => {
 
 // Start Express Application after configuring Vite
 async function bootstrap() {
+  // Ensure MongoDB connection is resolved before booting the HTTP listener
+  await connectToMongo();
+
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
       server: { middlewareMode: true },
