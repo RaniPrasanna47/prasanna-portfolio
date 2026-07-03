@@ -161,57 +161,91 @@ async function sendEmailNotification(data: {
   aiSentiment?: string;
   aiDraftReply?: string;
 }) {
-  let host = process.env.SMTP_HOST;
+  const host = process.env.SMTP_HOST;
   const port = process.env.SMTP_PORT || '587';
   const user = process.env.SMTP_USER;
   const pass = process.env.SMTP_PASS;
   const receiver = process.env.CONTACT_RECEIVER_EMAIL || 'raniprasanna997@gmail.com';
 
   console.log('[SMTP Mailer] Initializing email dispatch...');
-  console.log(` - Raw Environment SMTP_HOST: "${process.env.SMTP_HOST || '(Not specified)'}"`);
-  console.log(` - Raw Environment SMTP_PORT: "${process.env.SMTP_PORT || '587 (Default)'}"`);
-  console.log(` - Raw Environment SMTP_USER: "${process.env.SMTP_USER || '(Not specified)'}"`);
-  console.log(` - Raw Environment SMTP_PASS: ${process.env.SMTP_PASS ? '[Configured]' : '[Missing/Not Set]'}`);
+  console.log(` - Raw Environment SMTP_HOST: "${host || '(Not specified)'}"`);
+  console.log(` - Raw Environment SMTP_PORT: "${port}"`);
+  console.log(` - Raw Environment SMTP_USER: "${user || '(Not specified)'}"`);
+  console.log(` - Raw Environment SMTP_PASS: ${pass ? '[Configured]' : '[Missing/Not Set]'}`);
   console.log(` - Target Receiver: "${receiver}"`);
 
   if (!user || !pass) {
     console.log('[SMTP Mailer] Skipping actual email dispatch because SMTP_USER or SMTP_PASS is missing.');
-    return { sent: false, reason: 'Credentials not configured' };
+    return { sent: false, reason: 'Credentials not configured in environment variables (SMTP_USER / SMTP_PASS).' };
   }
 
-  // Smart fallback for SMTP Host if not explicitly provided
-  if (!host) {
-    if (user.includes('@gmail.com')) {
-      host = 'smtp.gmail.com';
-    } else if (user.includes('@outlook.com') || user.includes('@hotmail.com')) {
-      host = 'smtp-mail.outlook.com';
-    } else if (user.includes('@yahoo.com')) {
-      host = 'smtp.mail.yahoo.com';
-    } else {
-      console.log('[SMTP Mailer] SMTP_HOST is not specified and could not auto-resolve from the SMTP_USER domain. Skipping actual email dispatch.');
-      return { sent: false, reason: 'SMTP_HOST not specified' };
-    }
-    console.log(` - Auto-resolved SMTP_HOST fallback: "${host}"`);
-  }
+  const lowerUser = user.toLowerCase();
+  const lowerHost = host ? host.toLowerCase() : '';
+  
+  let transportOptions: any = {};
+  let usingService = false;
 
-  console.log(`[SMTP Mailer] Initiating connection to: ${host}:${port} (Secure mode: ${port === '465'})`);
-
-  try {
-    const transporter = nodemailer.createTransport({
-      host: host,
+  // Extremely reliable smart auto-detection for popular mail services
+  if (lowerUser.endsWith('@gmail.com') || lowerHost.includes('gmail.com')) {
+    console.log('[SMTP Mailer] Utilizing specialized Nodemailer "gmail" service adapter for maximum delivery assurance.');
+    transportOptions = {
+      service: 'gmail',
+      auth: {
+        user: user,
+        pass: pass,
+      },
+    };
+    usingService = true;
+  } else if (lowerUser.endsWith('@outlook.com') || lowerUser.endsWith('@hotmail.com') || lowerUser.endsWith('@live.com') || lowerHost.includes('outlook.com') || lowerHost.includes('office365')) {
+    console.log('[SMTP Mailer] Utilizing specialized Nodemailer "hotmail" (Outlook/Office365) service adapter.');
+    transportOptions = {
+      service: 'hotmail',
+      auth: {
+        user: user,
+        pass: pass,
+      },
+    };
+    usingService = true;
+  } else if (lowerUser.endsWith('@yahoo.com') || lowerHost.includes('yahoo.com')) {
+    console.log('[SMTP Mailer] Utilizing specialized Nodemailer "yahoo" service adapter.');
+    transportOptions = {
+      service: 'yahoo',
+      auth: {
+        user: user,
+        pass: pass,
+      },
+    };
+    usingService = true;
+  } else {
+    // Manual fallback config
+    const resolvedHost = host || ('smtp.' + lowerUser.split('@')[1]);
+    console.log(`[SMTP Mailer] Using manual connection host: "${resolvedHost}:${port}" (Secure: ${port === '465'})`);
+    transportOptions = {
+      host: resolvedHost,
       port: parseInt(port),
       secure: port === '465',
       auth: {
         user: user,
         pass: pass,
       },
-      connectionTimeout: 5000, // Fail fast if SMTP port is blocked or unreachable (5 seconds)
-      greetingTimeout: 5000,   // Fail fast if greeting response is slow (5 seconds)
-      socketTimeout: 10000,    // Idle timeout for socket operations (10 seconds)
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 15000,
       tls: {
-        rejectUnauthorized: false // Avoid handshake failures for various mail setups
+        rejectUnauthorized: false
       }
-    });
+    };
+  }
+
+  try {
+    const transporter = nodemailer.createTransport(transportOptions);
+
+    // Verify SMTP connection credentials and server state beforehand to fail fast with detailed logging
+    if (!usingService) {
+      console.log('[SMTP Mailer] Verifying raw connection parameters...');
+      await transporter.verify();
+      console.log('[SMTP Mailer] Connection parameters validated successfully!');
+    }
 
     const mailOptions = {
       from: `"${data.name} via Portfolio" <${user}>`,
