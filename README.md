@@ -121,3 +121,53 @@ If you require server-side routes (Express endpoints) to run on Vercel:
    }
    ```
 2. Connect and deploy the repository via Vercel. Vercel will automatically provision serverless handlers for your `/api` routes!
+
+---
+
+## 🌐 Deploying on Render (Full-Stack Web Service)
+
+Render is excellent for hosting full-stack applications with a persistent Express backend. Follow these steps to deploy this application as a Render Web Service:
+
+### 1. Push to GitHub
+Initialize Git, commit your files, and push the project to a public or private repository on GitHub:
+```bash
+git init
+git add .
+git commit -m "feat: portfolio full-stack setup"
+git branch -M main
+git remote add origin <your-github-repo-url>
+git push -u origin main
+```
+
+### 2. Create a New Web Service on Render
+1. Log in to your [Render Dashboard](https://render.com).
+2. Click **New +** and select **Web Service**.
+3. Connect your GitHub account and select your portfolio repository.
+
+### 3. Configure the Web Service Settings
+During the setup wizard, configure the following values:
+- **Name**: `prasanna-portfolio` (or your preferred name)
+- **Region**: Choose the region closest to your target audience (e.g., `Singapore` or `Oregon`)
+- **Branch**: `main`
+- **Runtime**: `Node`
+- **Build Command**: `npm install && npm run build`
+- **Start Command**: `npm run start` (this runs `node dist/server.cjs` which starts the compiled server)
+- **Instance Type**: Select the **Free** tier (or paid if preferred).
+
+### 4. Configure Environment Variables
+Go to the **Environment** tab on your Render Web Service page and define the following variables:
+- `NODE_ENV`: `production`
+- `MONGODB_URI`: `<Your MongoDB Connection String>` (highly recommended to take the contacts storage online!)
+- `GEMINI_API_KEY`: `<Your Gemini API Key>` (if using smart helper queries)
+- `SMTP_USER`: `<Your Sender Email Address>` (if using the contact form email dispatcher)
+- `SMTP_PASS`: `<Your Email App Password>`
+- *Note: You do **not** need to manually define the `PORT` variable. Render automatically sets the `PORT` environment variable, and the Express server will dynamically bind to it.*
+
+### 5. Deploy & Verify
+Click **Deploy Web Service**. Render will install dependencies, build the static Vite client, bundle the TypeScript Express server, and start the service. Once deployed, you will see:
+```text
+Full-Stack Server booting successfully on port 10000
+MongoDB storage connection state: ONLINE
+```
+Your live portfolio will now be accessible at your Render sub-domain (e.g., `https://prasanna-portfolio.onrender.com`)!
+
