@@ -472,12 +472,26 @@ app.get('/api/profile', (req, res) => {
     linkedin: 'https://www.linkedin.com/in/g-rani-prasanna/',
     github: 'https://github.com/RaniPrasanna47',
     location: 'NIT Durgapur, India',
-    education: {
+    education: [
+      {
       institution: 'National Institute of Technology, Durgapur',
       degree: 'Bachelor of Technology in Computer Science and Engineering',
       period: '2024 - 2028',
       cgpa: '8.8 / 10'
     },
+    {
+        institution: 'Sri Chaitanya jr College',
+        degree: 'Intermediate board of education',
+        period: '2022 - 2024',
+        cgpa: '98.8%'
+      },
+      {
+        institution: 'Sri Chaitanya Techno School',
+        degree: 'Secondary Board of Education 10th grade',
+        period: '2021 - 2022',
+        cgpa: '97.84%'
+      }
+  ],
     skills: {
       languages: ['C', 'C++', 'Python', 'HTML', 'CSS', 'JavaScript', 'SQL'],
       frameworks: ['React.js', 'Django', 'Streamlit', 'Bootstrap', 'NumPy', 'Pandas', 'scikit-learn', 'FastAPI', 'Flask'],

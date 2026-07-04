@@ -563,17 +563,23 @@ export default function App() {
                     <h3 className={`text-lg font-bold ${styles.heading}`}>Academic Background</h3>
                   </div>
 
-                  <div className="relative border-l-2 border-cyan-500/20 pl-4 space-y-2">
-                    <span className={`absolute -left-1.5 top-1.5 w-3 h-3 rounded-full bg-cyan-500 border ${isDark ? 'border-[#050506]' : 'border-slate-50'}`}></span>
-                    <div className="flex justify-between items-start flex-wrap gap-2">
-                      <h4 className={`text-sm font-bold ${styles.heading}`}>{displayProfile.education.institution}</h4>
-                      <span className={`text-xs ${styles.badge} py-0.5 px-2 rounded-md font-mono border`}>{displayProfile.education.period}</span>
-                    </div>
-                    <p className={`text-xs ${styles.subtext} font-medium`}>{displayProfile.education.degree}</p>
-                    <div className="inline-flex items-center gap-1.5 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-xs px-2.5 py-1 rounded-md font-bold mt-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                      CGPA: {displayProfile.education.cgpa}
-                    </div>
+                  <div className="space-y-8">
+                    {(Array.isArray(displayProfile.education) ? displayProfile.education : [displayProfile.education]).map((edu, idx) => (
+                      <div key={idx} className="relative border-l-2 border-cyan-500/20 pl-4 space-y-2">
+                        <span className={`absolute -left-1.5 top-1.5 w-3 h-3 rounded-full bg-cyan-500 border ${isDark ? 'border-[#050506]' : 'border-slate-50'}`}></span>
+                        <div className="flex justify-between items-start flex-wrap gap-2">
+                          <h4 className={`text-sm font-bold ${styles.heading}`}>{edu.institution}</h4>
+                          <span className={`text-xs ${styles.badge} py-0.5 px-2 rounded-md font-mono border`}>{edu.period}</span>
+                        </div>
+                        <p className={`text-xs ${styles.subtext} font-medium`}>{edu.degree}</p>
+                        {edu.cgpa && (
+                          <div className="inline-flex items-center gap-1.5 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-xs px-2.5 py-1 rounded-md font-bold mt-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                            {edu.cgpa.includes('%') ? 'Score' : 'CGPA'}: {edu.cgpa}
+                          </div>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 </div>
 

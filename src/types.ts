@@ -27,7 +27,7 @@ export interface Profile {
   linkedin: string;
   github: string;
   location: string;
-  education: Education;
+  education: Education[];
   skills: Skills;
   positions: PositionOfResponsibility[];
   achievements: string[];
